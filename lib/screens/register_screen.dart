@@ -1,6 +1,5 @@
-
-
 import 'package:flutter/material.dart';
+import '../api_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -11,6 +10,48 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
+
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  final _apiService = ApiService();
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _signUp() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        await _apiService.signUp({
+          'name': _nameController.text.trim(),
+          'email': _emailController.text.trim(),
+          'password': _passwordController.text,
+        });
+
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Data sent successfully'),
+          ),
+        );
+      } catch (e) {
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Error sending data'),
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +75,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                   const Text('Name:'),
                   TextFormField(
+                    controller: _nameController,
                     decoration: const InputDecoration(
                       hintText: 'Enter name',
                     ),
@@ -49,6 +91,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                   const Text('Email:'),
                   TextFormField(
+                    controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     decoration: const InputDecoration(
                       hintText: 'Enter email',
@@ -70,6 +113,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                   const Text('Password:'),
                   TextFormField(
+                    controller: _passwordController,
                     obscureText: true,
                     decoration: const InputDecoration(
                       hintText: 'Enter password',
@@ -88,15 +132,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 24),
 
                   ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Validation successful'),
-                          ),
-                        );
-                      }
-                    },
+                    onPressed: _signUp,
                     child: const Text('Sign up'),
                   ),
 

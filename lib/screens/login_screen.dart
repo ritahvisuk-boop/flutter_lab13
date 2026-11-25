@@ -1,6 +1,5 @@
-
-
 import 'package:flutter/material.dart';
+import '../api_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,6 +10,45 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
+
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  final _apiService = ApiService();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _login() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        await _apiService.login({
+          'email': _emailController.text.trim(),
+          'password': _passwordController.text,
+        });
+
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Data sent successfully'),
+          ),
+        );
+      } catch (e) {
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Error sending data'),
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const Text('Email:'),
                   TextFormField(
+                    controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     decoration: const InputDecoration(
                       hintText: 'Enter email',
@@ -55,6 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const Text('Password:'),
                   TextFormField(
+                    controller: _passwordController,
                     obscureText: true,
                     decoration: const InputDecoration(
                       hintText: 'Enter password',
@@ -85,15 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Validation successful'),
-                                ),
-                              );
-                            }
-                          },
+                          onPressed: _login,
                           child: const Text('Login'),
                         ),
                       ),
